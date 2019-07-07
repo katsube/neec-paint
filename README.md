@@ -1,6 +1,6 @@
 # オンラインペイント
 ## What is this
-日本工学院八王子専門学校 ゲーム科4年生向けのPHP実習のサンプルです。
+日本工学院八王子専門学校 ゲーム科4年生向けのNode.js/Socket.io実習のサンプルです。
 
 ## Quick Start
 ### Install
