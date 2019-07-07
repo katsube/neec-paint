@@ -17,6 +17,10 @@ small{
   color: gray;
   font-size: 12px;
 }
+footer{
+  width: 700px;
+  text-align: right;
+}
 #contents{
   display: flex;
   width: 800px;
