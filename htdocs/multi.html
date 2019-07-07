@@ -71,52 +71,20 @@
     </section>
     <!-- /線の色 -->
 
+    <section id="panels-dl">
+        <h3>Download</h3>
+        <div class="panels-group">
+          <button type="button" id="btn-dl"><img src="/image/icon_dl.svg" width="20"></button>
+        </div>
+    </section>
   </section>
   <!-- /設定 -->
 </div>
 
-<script src="/socket.io/socket.io.js"></script>
 <script src="/js/drawboard.js"></script>
 <script>
 window.onload = () => {
-  const socket = io();
   const board  = new DrawBoard("#board");
-
-  //---------------------------------------
-  // Tokenを準備
-  //---------------------------------------
-  // クライアントに保存されていれば利用する
-  let token = localStorage.getItem("mytoken");
-
-  // 初めてであれば新たにTokenを生成する
-  if( token === null ){
-    token = getToken();
-    localStorage.setItem("mytoken", token);     // 生成したら保存
-  }
-
-  //---------------------------------------
-  // Socket.io
-  //---------------------------------------
-  // 描画後に実行する処理を登録
-  board.setCallback((param)=>{
-    // 他ユーザーへ送信
-    socket.emit('action', {token:token, action:param});
-  });
-  // 他ユーザーの行動を受信
-  socket.on('action', (data)=>{
-    const mode = data.action.mode;
-    const pos  = data.action.pos;
-    const line = data.action.line;
-
-    if( mode === "pencil" ){
-      board.drawLine(pos.x1, pos.y1, pos.x2, pos.y2, line.size, line.color, false);
-    }
-    else if( mode === "erase" ){
-      board.eraseLine(pos.x1, pos.y1, pos.x2, pos.y2, line.size, false);
-    }
-
-    console.log(data);
-  });
 
   //---------------------------------------
   // ツール
@@ -153,25 +121,25 @@ window.onload = () => {
       document.querySelector("#color-current").style.backgroundColor = color;
     })
   });
+
+  // ダウンロード
+  document.querySelector("#btn-dl").addEventListener("click", ()=>{
+    // canvasを画像データとして取得
+    const blob = board.getImage("image/png");
+
+    // 画像データを「URI」に変換
+    const dataURI = window.URL.createObjectURL(blob);
+
+    // JS内部でクリックイベントを発動→ダウンロード
+    const event = document.createEvent("MouseEvents");
+    event.initMouseEvent("click", true, false, window, 0, 0, 0, 0, 0, false, false, false, false, 0, null);
+
+    const a = document.createElementNS("http://www.w3.org/1999/xhtml", "a");
+    a.href = dataURI;       // 保存したいデータ
+    a.download = "paint";   // ファイル名
+    a.dispatchEvent(event); // イベント発動
+  });
 };
-
-/**
- * ランダムな文字列を作成
- *
- * @param  {integer} [len=32] 文字列長
- * @return {string}
- */
- function getToken(len=32){
-  const ls = "abcdefghijklmnopqrstuvwxyz0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZ";
-  let result = "";
-
-  for(let i=0; i<len; i++){
-    const idx = Math.floor( Math.random() * ls.length );
-    result += ls[idx];
-  }
-
-  return(result);
-}
 </script>
 </body>
 </html>

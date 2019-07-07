@@ -21,7 +21,13 @@ const io   = require("socket.io")(http);
 // Webサーバ
 //--------------------------------------
 app.get("/", (req, res)=>{
-  res.sendFile( DOCUMENT_ROOT + "client.html");
+  res.sendFile( DOCUMENT_ROOT + "index.html");
+});
+app.get("/solo", (req, res)=>{
+  res.sendFile( DOCUMENT_ROOT + "solo.html");
+});
+app.get("/multi", (req, res)=>{
+  res.sendFile( DOCUMENT_ROOT + "multi.html");
 });
 app.get("/:dir/:file", (req, res)=>{
   res.sendFile(DOCUMENT_ROOT + req.params.dir + "/" + req.params.file);

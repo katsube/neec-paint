@@ -1,0 +1,64 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="UTF-8">
+  <title>Socket.io Pain (room)</title>
+  <style>
+    body{
+      background-color: gray;
+    }
+    h1{
+      padding-top: 30px;
+      padding-bottom: 20px;
+    }
+    #contents{
+      width: 50%;
+      min-width: 450px;
+      height: 300px;
+      margin: auto;
+      text-align: center;
+      vertical-align: middle;
+      background-color: white;
+      border-radius: 10px;
+    }
+    #mainmenu{
+      width: 400px;
+      margin: auto;
+    }
+    #mainmenu ul{
+      list-style-type: none;
+      margin: 0px;
+      padding: 0px;
+    }
+    #solo, #multi{
+      width: 300px;
+      height: 60px;
+      margin-bottom: 20px;
+      font-size: 16px;
+    }
+  </style>
+</head>
+<body>
+
+<section id="contents">
+  <h1>Socket.io Paint</h1>
+  <menu id="mainmenu">
+    <ul>
+      <li><button type="button" id="solo">ソロ</button></li>
+      <li><button type="button" id="multi">マルチ</button></li>
+    </ul>
+  </menu>
+</section>
+
+<script>
+window.onload = () => {
+  document.querySelector("#solo").addEventListener("click", ()=>{
+    location.href="/solo";
+  });
+  document.querySelector("#multi").addEventListener("click", ()=>{
+    location.href="/multi";
+  });
+};
+</script>
+</body>
+</html>

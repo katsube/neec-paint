@@ -255,4 +255,43 @@ class DrawBoard {
       });
     }
   }
+
+  /**
+   * 現状のCanvasを画像データとして返却
+   *
+   * @param {string}  [type] MimeType
+   * @param {boolean} [isblob] blobに変換するか
+   * @return {string|blob}
+   */
+  getImage(type="image/png", isblob=true){
+    const base64 = this.canvas.toDataURL(type);   // "data:image/png;base64,iVBORw0k～"
+    if(isblob){
+      return( this._base64toblob(base64) );
+    }
+    else{
+      return( base64 );
+    }
+  }
+  /**
+   * DataURIをblobに変換
+   *
+   * @param {string} base64 Base64にエンコードされたDataURI
+   * @return {blob}
+   */
+  _base64toblob(base64){
+    const tmp  = base64.split(",");                     // data:image/png;base64,iVBORw0k～
+    const data = atob(tmp[1]);                          // 右側のデータ部分(iVBORw0k～)をデコード
+    const mime = tmp[0].split(":")[1].split(";")[0];    // 画像形式(image/png)を取り出す
+
+    // Blobのコンストラクタに食わせる値を作成
+    let buff = new Uint8Array(data.length);     // 配列準備
+    for (let i = 0; i < data.length; i++) {
+      buff[i] = data.charCodeAt(i);
+    }
+
+    return(
+      new Blob([buff], { type: mime })
+    );
+  }
+
 }
