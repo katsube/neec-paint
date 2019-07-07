@@ -1,0 +1,177 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="UTF-8">
+  <title>Socket.io Paint</title>
+  <link rel="stylesheet" href="/css/style.css" type="text/css" media="all">
+</head>
+<body>
+
+<div id="contents">
+  <!-- ツール -->
+  <section id="tools">
+    <label class="tools-type-radio"><input type="radio" name="tools-type" value="pencil" checked><img src="/image/icon_pencil.svg" width="30"></label>
+    <label class="tools-type-radio"><input type="radio" name="tools-type" value="erase"><img src="/image/icon_eraser.svg" width="30"></label>
+  </section>
+  <!-- /ツール -->
+
+  <!-- お絵描きボード -->
+  <section id="main">
+    <canvas width="500" height="500" id="board"></canvas>
+  </section>
+  <!-- /お絵描きボード -->
+
+  <!-- 設定 -->
+  <section id="panels">
+    <!-- 線の太さ -->
+    <section id="panels-size">
+      <h3>
+        <svg id="size-current" width="20" height="20" version="1.1" xmlns="http://www.w3.org/2000/svg">
+          <line x1="0" y1="10" x2="82" y2="10" stroke="black" fill="transparent" stroke-width="5"/>
+        </svg>
+        線の太さ
+      </h3>
+      <div class="panels-group">
+        <svg class="size-selector" data-size="1" width="20" height="20" version="1.1" xmlns="http://www.w3.org/2000/svg">
+          <line x1="0" y1="10" x2="20" y2="10" stroke="black" fill="transparent" stroke-width="1"/>
+        </svg>
+        <svg class="size-selector" data-size="5" width="20" height="20" version="1.1" xmlns="http://www.w3.org/2000/svg">
+          <line x1="0" y1="10" x2="20" y2="10" stroke="black" fill="transparent" stroke-width="5"/>
+        </svg>
+        <svg class="size-selector" data-size="10" width="20" height="20" version="1.1" xmlns="http://www.w3.org/2000/svg">
+          <line x1="0" y1="10" x2="20" y2="10" stroke="black" fill="transparent" stroke-width="10"/>
+        </svg>
+      </div>
+    </section>
+    <!-- /線の太さ -->
+
+    <!-- 線の色 -->
+    <section id="panels-color">
+      <h3>
+        <span id="color-current"></span>
+        線の色
+      </h3>
+      <div class="panels-group">
+        <button type="button" class="color-picker" data-color="white"   style="background-color:white"></button>
+        <button type="button" class="color-picker" data-color="olive"   style="background-color:olive"></button>
+        <button type="button" class="color-picker" data-color="yellow"  style="background-color:yellow"></button>
+        <button type="button" class="color-picker" data-color="fuchsia" style="background-color:fuchsia"></button>
+        <button type="button" class="color-picker" data-color="silver"  style="background-color:silver"></button>
+        <button type="button" class="color-picker" data-color="aqua"    style="background-color:aqua"></button>
+        <button type="button" class="color-picker" data-color="lime"    style="background-color:lime"></button>
+        <button type="button" class="color-picker" data-color="red"     style="background-color:red"></button>
+        <button type="button" class="color-picker" data-color="blue"    style="background-color:blue"></button>
+        <button type="button" class="color-picker" data-color="green"   style="background-color:green"></button>
+        <button type="button" class="color-picker" data-color="purple"  style="background-color:purple"></button>
+        <button type="button" class="color-picker" data-color="black"   style="background-color:black"></button>
+        <button type="button" class="color-picker" data-color="navy"    style="background-color:navy"></button>
+        <button type="button" class="color-picker" data-color="teal"    style="background-color:teal"></button>
+        <button type="button" class="color-picker" data-color="maroon"  style="background-color:maroon"></button>
+      </div>
+    </section>
+    <!-- /線の色 -->
+
+  </section>
+  <!-- /設定 -->
+</div>
+
+<script src="/socket.io/socket.io.js"></script>
+<script src="/js/drawboard.js"></script>
+<script>
+window.onload = () => {
+  const socket = io();
+  const board  = new DrawBoard("#board");
+
+  //---------------------------------------
+  // Tokenを準備
+  //---------------------------------------
+  // クライアントに保存されていれば利用する
+  let token = localStorage.getItem("mytoken");
+
+  // 初めてであれば新たにTokenを生成する
+  if( token === null ){
+    token = getToken();
+    localStorage.setItem("mytoken", token);     // 生成したら保存
+  }
+
+  //---------------------------------------
+  // Socket.io
+  //---------------------------------------
+  // 描画後に実行する処理を登録
+  board.setCallback((param)=>{
+    // 他ユーザーへ送信
+    socket.emit('action', {token:token, action:param});
+  });
+  // 他ユーザーの行動を受信
+  socket.on('action', (data)=>{
+    const mode = data.action.mode;
+    const pos  = data.action.pos;
+    const line = data.action.line;
+
+    if( mode === "pencil" ){
+      board.drawLine(pos.x1, pos.y1, pos.x2, pos.y2, line.size, line.color, false);
+    }
+    else if( mode === "erase" ){
+      board.eraseLine(pos.x1, pos.y1, pos.x2, pos.y2, line.size, false);
+    }
+
+    console.log(data);
+  });
+
+  //---------------------------------------
+  // ツール
+  //---------------------------------------
+  // 鉛筆 or 消しゴム
+  document.querySelectorAll("input[name='tools-type']").forEach((item)=>{
+    item.addEventListener("click", ()=>{
+      const mode = item.value;   // ラジオボタンの選択された値を取得
+      board.setMode(mode);       // オブジェクトにセット
+    });
+  });
+
+  //---------------------------------------
+  // 設定
+  //---------------------------------------
+  // 線の太さ
+  document.querySelectorAll(".size-selector").forEach((item)=>{
+    item.addEventListener("click", ()=>{
+      const size = item.getAttribute("data-size");   // data-size属性の値を取得
+      board.setLineWidth(size);                      // オブジェクトにセット
+
+      // <h3>左横にあるプレビューを更新
+      document.querySelector("#size-current line").setAttribute("stroke-width", size);
+    });
+  });
+
+  // 線の色
+  document.querySelectorAll(".color-picker").forEach((item)=>{
+    item.addEventListener("click", ()=>{
+      const color = item.getAttribute("data-color");   // data-color属性の値を取得
+      board.setLineColor(color);                       // オブジェクトにセット
+
+      // <h3>左横にあるプレビューを更新
+      document.querySelector("#color-current").style.backgroundColor = color;
+    })
+  });
+};
+
+/**
+ * ランダムな文字列を作成
+ *
+ * @param  {integer} [len=32] 文字列長
+ * @return {string}
+ */
+ function getToken(len=32){
+  const ls = "abcdefghijklmnopqrstuvwxyz0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZ";
+  let result = "";
+
+  for(let i=0; i<len; i++){
+    const idx = Math.floor( Math.random() * ls.length );
+    result += ls[idx];
+  }
+
+  return(result);
+}
+</script>
+</body>
+</html>

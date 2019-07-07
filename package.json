@@ -1,0 +1,15 @@
+{
+  "name": "net-paint",
+  "version": "1.0.0",
+  "description": "Multiple player can draw pictures together",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "author": "Makito Katsube <katsubemakito@gmail.com> (http://github.com/katsube)",
+  "license": "ISC",
+  "dependencies": {
+    "express": "^4.17.1",
+    "socket.io": "^2.2.0"
+  }
+}
