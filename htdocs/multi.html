@@ -85,6 +85,7 @@
 
 
 <script src="/socket.io/socket.io.js"></script>
+<script src="/js/util.js"></script>
 <script src="/js/drawboard.js"></script>
 <script>
 window.onload = () => {
@@ -92,10 +93,28 @@ window.onload = () => {
   const board  = new DrawBoard("#board");
 
   //---------------------------------------
+  // 初期情報を取得
+  //---------------------------------------
+  requestAPI("/api/history/get", (json)=>{
+    let i = 0;
+    let timer = setInterval( () => {
+      // タイマー解除
+      if( json.length <= i ){
+        clearInterval(timer);
+        return(true);
+      }
+      // 描画
+      drawCanvas(board, json[i++]);
+    }, 1);
+  });
+
+
+  //---------------------------------------
   // Tokenを準備
   //---------------------------------------
   // クライアントに保存されていれば利用する
   let token = localStorage.getItem("mytoken");
+
   // 初めてであれば新たにTokenを生成する
   if( token === null ){
     token = getToken();
@@ -113,18 +132,8 @@ window.onload = () => {
 
   // 他ユーザーの行動を受信
   socket.on('action', (data)=>{
-    const mode = data.action.mode;
-    const pos  = data.action.pos;
-    const line = data.action.line;
-
-    if( mode === "pencil" ){
-      board.drawLine(pos.x1, pos.y1, pos.x2, pos.y2, line.size, line.color, false);
-    }
-    else if( mode === "erase" ){
-      board.eraseLine(pos.x1, pos.y1, pos.x2, pos.y2, line.size, false);
-    }
-
-    console.log(data);
+    // canvasに描画
+    drawCanvas(board, data);
   });
 
   //---------------------------------------
@@ -182,6 +191,29 @@ window.onload = () => {
   });
 };
 
+
+/**
+ * Canvasに描画
+ *
+ * @param {object} board DrawCanvasオブジェクト
+ * @param {object} data  描画内容
+ */
+function drawCanvas(board, data){
+  const mode = data.action.mode;
+  const pos  = data.action.pos;
+  const line = data.action.line;
+
+  // 鉛筆モード
+  if( mode === "pencil" ){
+    board.drawLine(pos.x1, pos.y1, pos.x2, pos.y2, line.size, line.color, false);
+  }
+  // 消しゴムモード
+  else if( mode === "erase" ){
+    board.eraseLine(pos.x, pos.y, line.size, false);
+  }
+
+  console.log(data);
+}
 
 /**
  * ランダムな文字列を作成

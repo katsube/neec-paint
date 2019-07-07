@@ -162,7 +162,7 @@ class DrawBoard {
       }
       // 消しゴムモード
       else if( this.status.mode === "erase" ){
-        this.eraseLine(x1, y1, x2, y2);
+        this.eraseLine(x2, y2);
       }
 
       // 今回の座標をプロパティ内に記録
@@ -227,31 +227,29 @@ class DrawBoard {
  /**
    * 指定範囲を削除する
    *
-   * @param {integer} x1 始点x
-   * @param {integer} y1 始点y
-   * @param {integer} x2 終点x
-   * @param {integer} y2 終点y
+   * @param {integer} x 始点x
+   * @param {integer} y 始点y
    * @param {integer} [size]  線の幅。省略時はプロパティ値が採用される
    * @param {boolean} [cbrun] callbackを実行するか
    * @return {void}
    */
-  eraseLine(x1, y1, x2, y2, size=null, cbrun=true){
+  eraseLine(x, y, size=null, cbrun=true){
     const ctx = this.ctx;
 
     // 領域のサイズを計算
     size = (size===null)?  this.status.line.width:size;
-    const width  = Math.abs(x1-x2) * size;    // 横幅
-    const height = Math.abs(y1-y2) * size;    // 高さ
+    const width  = size * 10;    // 横幅
+    const height = size * 10;    // 高さ
 
     // 指定領域を削除する
-    ctx.clearRect(x1, y1, width, height);
+    ctx.clearRect(x, y, width, height);
 
     // 指定されたcallback関数を実行
     if( cbrun ){
       this.callback({
         mode: "erase",
         line: { size:size },
-        pos: { x1:x1, y1:y1, x2:x2, y2:y2 }
+        pos: { x:x, y:y }
       });
     }
   }
@@ -277,6 +275,7 @@ class DrawBoard {
    *
    * @param {string} base64 Base64にエンコードされたDataURI
    * @return {blob}
+   * @private
    */
   _base64toblob(base64){
     const tmp  = base64.split(",");                     // data:image/png;base64,iVBORw0k～

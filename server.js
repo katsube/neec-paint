@@ -16,10 +16,17 @@ const app  = require("express")();
 const http = require("http").Server(app);
 const io   = require("socket.io")(http);
 
+//--------------------------------------
+// グローバル変数
+//--------------------------------------
+let USER = 0;
+let HISTORY = [];
+
 
 //--------------------------------------
-// Webサーバ
+// HTTPサーバ
 //--------------------------------------
+// Web
 app.get("/", (req, res)=>{
   res.sendFile( DOCUMENT_ROOT + "index.html");
 });
@@ -32,6 +39,18 @@ app.get("/multi", (req, res)=>{
 app.get("/:dir/:file", (req, res)=>{
   res.sendFile(DOCUMENT_ROOT + req.params.dir + "/" + req.params.file);
 });
+
+// API
+app.get("/api/history/get", (req, res)=>{
+  const param = {
+    status: true,
+    value: HISTORY
+  };
+
+  res.send( JSON.stringify(param) );
+});
+
+// 起動
 http.listen(port, ()=>{
   console.log(`listening on *:${port}`);
 });
@@ -40,8 +59,33 @@ http.listen(port, ()=>{
 // Socket.io
 //--------------------------------------
 io.on("connection", (socket)=>{
+  // ログインしたらユーザー数を加算
+  USER++;
+  console.log(`新しいユーザーが入室。現在${USER}人が接続中`);
+
+  //------------------------
+  // 描画 or 消しゴム
+  //------------------------
   socket.on("action", (data)=>{
+    // 操作を記録
+    HISTORY.push(data);
+
+    // 送信者以外に送信
     socket.broadcast.emit("action", data);
     console.log(data);
+  });
+
+  //------------------------
+  // 切断
+  //------------------------
+  socket.on("disconnect", ()=>{
+    USER--;
+    console.log(`ユーザーが退室。現在${USER}人が接続中`);
+
+    // 全員ログアウトしたら履歴をクリア
+    if( USER === 0){
+      HISTORY = [];
+      console.log("ユーザーが全員退室。履歴データをクリアしました");
+    }
   });
 });
