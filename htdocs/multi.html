@@ -7,6 +7,8 @@
 </head>
 <body>
 
+<h1>マルチ</h1>
+
 <div id="contents">
   <!-- ツール -->
   <section id="tools">
@@ -81,10 +83,49 @@
   <!-- /設定 -->
 </div>
 
+
+<script src="/socket.io/socket.io.js"></script>
 <script src="/js/drawboard.js"></script>
 <script>
 window.onload = () => {
+  const socket = io();
   const board  = new DrawBoard("#board");
+
+  //---------------------------------------
+  // Tokenを準備
+  //---------------------------------------
+  // クライアントに保存されていれば利用する
+  let token = localStorage.getItem("mytoken");
+  // 初めてであれば新たにTokenを生成する
+  if( token === null ){
+    token = getToken();
+    localStorage.setItem("mytoken", token);     // 生成したら保存
+  }
+
+  //---------------------------------------
+  // Socket.io
+  //---------------------------------------
+  // 描画後に実行する処理を登録
+  board.setCallback((param)=>{
+    // 他ユーザーへ送信
+    socket.emit('action', {token:token, action:param});
+  });
+
+  // 他ユーザーの行動を受信
+  socket.on('action', (data)=>{
+    const mode = data.action.mode;
+    const pos  = data.action.pos;
+    const line = data.action.line;
+
+    if( mode === "pencil" ){
+      board.drawLine(pos.x1, pos.y1, pos.x2, pos.y2, line.size, line.color, false);
+    }
+    else if( mode === "erase" ){
+      board.eraseLine(pos.x1, pos.y1, pos.x2, pos.y2, line.size, false);
+    }
+
+    console.log(data);
+  });
 
   //---------------------------------------
   // ツール
@@ -140,6 +181,23 @@ window.onload = () => {
     a.dispatchEvent(event); // イベント発動
   });
 };
+
+
+/**
+ * ランダムな文字列を作成
+ *
+ * @param  {integer} [len=32] 文字列長
+ * @return {string}
+ */
+ function getToken(len=32){
+  const ls = "abcdefghijklmnopqrstuvwxyz0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZ";
+  let result = "";
+  for(let i=0; i<len; i++){
+    const idx = Math.floor( Math.random() * ls.length );
+    result += ls[idx];
+  }
+  return(result);
+}
 </script>
 </body>
 </html>
