@@ -83,8 +83,27 @@
   <!-- /設定 -->
 </div>
 
+<!-- システムメッセージ -->
+<section id="sysMessage">
+  <ul>現在ソロモードで起動中です</ul>
+</section>
+<!-- /システムメッセージ -->
+
+  <!-- フッター -->
+<footer>
+  <form action="/">
+    <button>トップへ戻る</button>
+  </form>
+</footer>
+  <!-- /フッター -->
+
+
 <script src="/js/drawboard.js"></script>
 <script>
+/**
+ * ロード完了時の処理
+ *
+ */
 window.onload = () => {
   const board  = new DrawBoard("#board");
 
@@ -142,6 +161,15 @@ window.onload = () => {
     a.dispatchEvent(event); // イベント発動
   });
 };
+
+/**
+ * このページを離れる際の処理
+ *
+ */
+ window.onbeforeunload = () => {
+  // 文字列を返却すると、遷移前に警告が出るようになる。
+  return("このページから本当に移動して良いですか？");       // この文字列が表示されるわけではない
+}
 </script>
 </body>
 </html>
