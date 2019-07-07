@@ -83,6 +83,12 @@
   <!-- /設定 -->
 </div>
 
+<!-- システムメッセージ -->
+<section id="sysMessage">
+  <ul></ul>
+</section>
+<!-- /システムメッセージ -->
+
 
 <script src="/socket.io/socket.io.js"></script>
 <script src="/js/util.js"></script>
@@ -134,6 +140,11 @@ window.onload = () => {
   socket.on('action', (data)=>{
     // canvasに描画
     drawCanvas(board, data);
+  });
+
+  // システムメッセージを受信
+  socket.on('sysmessage', (data)=>{
+    addSystemMessage(data);
   });
 
   //---------------------------------------
@@ -213,6 +224,12 @@ function drawCanvas(board, data){
   }
 
   console.log(data);
+}
+
+function addSystemMessage(data){
+  const list = document.querySelector("#sysMessage ul");
+  let html = `<ul>${data.msg} <small>(${getFormatDate(data.time)})</small></ul>` + list.innerHTML;
+  list.innerHTML = html;
 }
 
 /**

@@ -61,6 +61,7 @@ http.listen(port, ()=>{
 io.on("connection", (socket)=>{
   // ログインしたらユーザー数を加算
   USER++;
+  io.emit("sysmessage", {msg:`新しいユーザーが入室。現在${USER}人が接続中`, time:time()});
   console.log(`新しいユーザーが入室。現在${USER}人が接続中`);
 
   //------------------------
@@ -80,6 +81,7 @@ io.on("connection", (socket)=>{
   //------------------------
   socket.on("disconnect", ()=>{
     USER--;
+    io.emit("sysmessage", {msg:`ユーザーが退室。現在${USER}人が接続中`, time:time()});
     console.log(`ユーザーが退室。現在${USER}人が接続中`);
 
     // 全員ログアウトしたら履歴をクリア
@@ -89,3 +91,15 @@ io.on("connection", (socket)=>{
     }
   });
 });
+
+
+/**
+ * 現在のUNIX TIMEを返却
+ *
+ * @return {string}
+ */
+function time(){
+  return(
+    new Date().getTime()
+  );
+}

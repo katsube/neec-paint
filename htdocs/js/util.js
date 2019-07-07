@@ -34,3 +34,22 @@ function requestAPI(api, callback){
   }
   req.send();
 }
+
+
+/**
+ * YYYY-MM-DD hh:mm:ss形式の日付を返却
+ *
+ * @param {string} [time] UNIX TIME。未指定時は現在時間が採用される。
+ * @return {string}
+ */
+function getFormatDate(time=time()){
+  const date = new Date(time);
+  return(
+      date.getFullYear()
+    + "-" + ("0" + date.getMonth()).slice(-2)
+    + "-" + ("0" + date.getDate()).slice(-2)
+    + " " + ("0" + date.getHours()).slice(-2)
+    + ":" + ("0" + date.getMinutes()).slice(-2)
+    + ":" + ("0" + date.getSeconds()).slice(-2)
+  );
+}
